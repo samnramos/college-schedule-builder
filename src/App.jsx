@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const ScheduleBuilder = () => {
   const [semester, setSemester] = useState('Fall 2026');
   const [viewMode, setViewMode] = useState('calendar'); 
+  const [editingId, setEditingId] = useState(null); 
   
   const [courses, setCourses] = useState(() => {
     const savedCourses = localStorage.getItem('schedule_courses');
@@ -13,7 +14,6 @@ const ScheduleBuilder = () => {
     ];
   });
 
-  // Sync courses to localStorage whenever the courses state changes
   useEffect(() => {
     localStorage.setItem('schedule_courses', JSON.stringify(courses));
   }, [courses]);
@@ -24,12 +24,36 @@ const ScheduleBuilder = () => {
     e.preventDefault();
     if (!formData.name || !formData.start || !formData.end) return;
 
-    const newCourse = { id: Date.now(), ...formData };
-    setCourses([...courses, newCourse]);
+    if (editingId) {
+      // Update existing course
+      setCourses(courses.map(course => course.id === editingId ? { ...course, ...formData } : course));
+      setEditingId(null);
+    } else {
+      // Add new course
+      const newCourse = { id: Date.now(), ...formData };
+      setCourses([...courses, newCourse]);
+    }
+    
+    setFormData({ name: '', day: 'Tuesday', start: '', end: '' });
+  };
+
+  const startEditCourse = (course) => {
+    setEditingId(course.id);
+    setFormData({
+      name: course.name,
+      day: course.day,
+      start: course.start,
+      end: course.end
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
     setFormData({ name: '', day: 'Tuesday', start: '', end: '' });
   };
 
   const handleRemoveCourse = (id) => {
+    if (editingId === id) cancelEdit();
     setCourses(courses.filter(course => course.id !== id));
   };
 
@@ -144,7 +168,9 @@ const ScheduleBuilder = () => {
       </div>
 
       <form onSubmit={handleAddCourse} style={{ backgroundColor: colors.bgContainer, padding: '24px', borderRadius: '12px', marginBottom: '32px' }}>
-        <h2 style={{ textAlign: 'center', color: colors.primaryBlue, fontSize: '18px', marginTop: 0, marginBottom: '20px', fontWeight: '600' }}>Add your courses</h2>
+        <h2 style={{ textAlign: 'center', color: colors.primaryBlue, fontSize: '18px', marginTop: 0, marginBottom: '20px', fontWeight: '600' }}>
+          {editingId ? 'Edit course details' : 'Add your courses'}
+        </h2>
         
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
           <div>
@@ -192,8 +218,15 @@ const ScheduleBuilder = () => {
           </div>
         </div>
 
-        <div style={{ textAlign: 'center' }}>
-          <button type="submit" style={{ backgroundColor: colors.primaryBlue, color: colors.white, border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>+ Add</button>
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+          <button type="submit" style={{ backgroundColor: colors.primaryBlue, color: colors.white, border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+            {editingId ? '💾 Save Changes' : '+ Add'}
+          </button>
+          {editingId && (
+            <button type="button" onClick={cancelEdit} style={{ backgroundColor: 'transparent', color: colors.textMuted, border: `1px solid ${colors.borderLight}`, borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+              Cancel
+            </button>
+          )}
         </div>
       </form>
 
@@ -215,7 +248,10 @@ const ScheduleBuilder = () => {
                 <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
                 <div style={{ fontSize: '14px', color: colors.textMuted }}>{course.day} | {course.start} - {course.end}</div>
               </div>
-              <button type="button" onClick={() => handleRemoveCourse(course.id)} style={{ backgroundColor: 'transparent', color: colors.dangerRed, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Remove</button>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <button type="button" onClick={() => startEditCourse(course)} style={{ backgroundColor: 'transparent', color: colors.primaryBlue, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
+                <button type="button" onClick={() => handleRemoveCourse(course.id)} style={{ backgroundColor: 'transparent', color: colors.dangerRed, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Remove</button>
+              </div>
             </div>
           ))}
         </div>
@@ -270,16 +306,23 @@ const ScheduleBuilder = () => {
                         border: `1px solid ${styleTheme.border}`,
                         borderRadius: '10px',
                         padding: '10px',
-                        boxSizing: 'border-box',
+                        boxSizing: 'box-sizing',
                         overflow: 'hidden',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
                         cursor: 'pointer'
                       }}
-                      title="Click to remove course"
+                      title="Click to edit or remove course"
                       onClick={() => {
-                        if(window.confirm(`Remove ${course.name}?`)) handleRemoveCourse(course.id);
+                        const action = window.confirm(`Click "OK" to edit "${course.name}" or "Cancel" to remove it.`);
+                        if (action) {
+                          startEditCourse(course);
+                        } else {
+                          if(window.confirm(`Are you sure you want to remove ${course.name}?`)) {
+                            handleRemoveCourse(course.id);
+                          }
+                        }
                       }}
                     >
                       <div style={{ fontWeight: '700', fontSize: '13px', color: styleTheme.text, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
