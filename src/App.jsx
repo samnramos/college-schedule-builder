@@ -25,11 +25,9 @@ const ScheduleBuilder = () => {
     if (!formData.name || !formData.start || !formData.end) return;
 
     if (editingId) {
-      // Update existing course
       setCourses(courses.map(course => course.id === editingId ? { ...course, ...formData } : course));
       setEditingId(null);
     } else {
-      // Add new course
       const newCourse = { id: Date.now(), ...formData };
       setCourses([...courses, newCourse]);
     }
@@ -238,23 +236,25 @@ const ScheduleBuilder = () => {
         </div>
       </div>
 
-      {courses.length === 0 ? (
-        <EmptyCoursesPlaceholder />
-      ) : viewMode === 'list' ? (
-        <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
-          {courses.map(course => (
-            <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
-              <div>
-                <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
-                <div style={{ fontSize: '14px', color: colors.textMuted }}>{course.day} | {course.start} - {course.end}</div>
+      {viewMode === 'list' ? (
+        courses.length === 0 ? (
+          <EmptyCoursesPlaceholder />
+        ) : (
+          <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
+            {courses.map(course => (
+              <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
+                <div>
+                  <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
+                  <div style={{ fontSize: '14px', color: colors.textMuted }}>{course.day} | {course.start} - {course.end}</div>
+                </div>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <button type="button" onClick={() => startEditCourse(course)} style={{ backgroundColor: 'transparent', color: colors.primaryBlue, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
+                  <button type="button" onClick={() => handleRemoveCourse(course.id)} style={{ backgroundColor: 'transparent', color: colors.dangerRed, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Remove</button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <button type="button" onClick={() => startEditCourse(course)} style={{ backgroundColor: 'transparent', color: colors.primaryBlue, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
-                <button type="button" onClick={() => handleRemoveCourse(course.id)} style={{ backgroundColor: 'transparent', color: colors.dangerRed, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Remove</button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       ) : (
         <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '16px', backgroundColor: colors.white, padding: '24px 16px 16px 16px', position: 'relative' }}>
           
