@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ScheduleBuilder = () => {
   const [semester, setSemester] = useState('Fall 2026');
   const [viewMode, setViewMode] = useState('calendar'); 
-  const [courses, setCourses] = useState([
-    { id: 1, name: 'CST 2307 - NetWorking Fundaentals', day: 'Tuesday', start: '2:00pm', end: '3:00pm' },
-    { id: 2, name: 'CST 2301 - MultiMedia and Mobile Device Programming', day: 'Monday', start: '10:00am', end: '11:30am' },
-    { id: 3, name: 'ACC 1101 - Principles of Accounting', day: 'Wednesday', start: '1:00pm', end: '2:15pm' }
-  ]);
+  
+  const [courses, setCourses] = useState(() => {
+    const savedCourses = localStorage.getItem('schedule_courses');
+    return savedCourses ? JSON.parse(savedCourses) : [
+      { id: 1, name: 'CST 2307 - NetWorking Fundamentals', day: 'Tuesday', start: '2:00pm', end: '3:00pm' },
+      { id: 2, name: 'CST 2301 - MultiMedia and Mobile Device Programming', day: 'Monday', start: '10:00am', end: '11:30am' },
+      { id: 3, name: 'ACC 1101 - Principles of Accounting', day: 'Wednesday', start: '1:00pm', end: '2:15pm' }
+    ];
+  });
+
+  // Sync courses to localStorage whenever the courses state changes
+  useEffect(() => {
+    localStorage.setItem('schedule_courses', JSON.stringify(courses));
+  }, [courses]);
 
   const [formData, setFormData] = useState({ name: '', day: 'Tuesday', start: '', end: '' });
 
@@ -97,6 +106,23 @@ const ScheduleBuilder = () => {
     boxSizing: 'border-box'
   };
 
+  const EmptyCoursesPlaceholder = () => (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      padding: '24px 32px',
+      border: `2px dashed ${colors.borderLight}`,
+      borderRadius: '16px',
+      backgroundColor: colors.white,
+      color: colors.textPlaceholder,
+      fontSize: '16px',
+      fontStyle: 'normal'
+    }}>
+      Add your courses and they will appear here! 
+    </div>
+  );
+
   return (
     <div style={{ maxWidth: '1100px', margin: '40px auto', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', border: `1px solid ${colors.borderLight}`, borderRadius: '16px', padding: '40px', backgroundColor: colors.white, boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)' }}>
       
@@ -113,7 +139,6 @@ const ScheduleBuilder = () => {
             <option value="Winter 2026">Winter 2026</option>
             <option value="Spring 2027">Spring 2027</option>
             <option value="Fall 2027">Fall 2027</option>
-
           </select>
         </div>
       </div>
@@ -180,7 +205,9 @@ const ScheduleBuilder = () => {
         </div>
       </div>
 
-      {viewMode === 'list' ? (
+      {courses.length === 0 ? (
+        <EmptyCoursesPlaceholder />
+      ) : viewMode === 'list' ? (
         <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
           {courses.map(course => (
             <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
@@ -275,5 +302,3 @@ const ScheduleBuilder = () => {
 };
 
 export default ScheduleBuilder;
-
-
