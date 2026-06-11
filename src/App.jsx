@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useScheduleBuilder } from './useScheduleBuilder';
 
 const colors = {
@@ -64,14 +64,23 @@ const ScheduleBuilder = () => {
     getCourseStyle,
     calculatePosition
   } = useScheduleBuilder();
+  
+  const [sortMethod, setSortMethod] = useState('default');
+  const [pinnedCourseIds, setPinnedCourseIds] = useState([]);
 
   const handleActionChange = (e, course) => {
     const action = e.target.value;
+    
     if (action === 'edit') {
       startEditCourse(course);
     } else if (action === 'remove') {
       handleRemoveCourse(course.id);
+    } else if (action === 'toggle-pin') {
+      togglePinCourse(course.id);
+    } else if (action === 'sort-alpha' || action === 'sort-time' || action === 'sort-default') {
+      setSortMethod(action.replace('sort-', ''));
     }
+    
     e.target.value = '';
   };
 
@@ -107,6 +116,38 @@ const ScheduleBuilder = () => {
       .map(day => displayDays[daysOfWeek.indexOf(day)])
       .join(', ');
   };
+
+  const togglePinCourse = (id) => {
+    if (pinnedCourseIds.includes(id)) {
+      setPinnedCourseIds(pinnedCourseIds.filter(courseId => courseId !== id));
+    } else {
+      setPinnedCourseIds([...pinnedCourseIds, id]);
+    }
+  };
+
+  const getOrganizedCourses = () => {
+    const coursesCopy = [...courses];
+    
+    coursesCopy.sort((a, b) => {
+      const aPinned = pinnedCourseIds.includes(a.id);
+      const bPinned = pinnedCourseIds.includes(b.id);
+      
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      
+      if (sortMethod === 'alpha') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortMethod === 'time') {
+        return a.start.localeCompare(b.start);
+      }
+      return 0;
+    });
+    
+    return coursesCopy;
+  };
+
+  const organizedCourses = getOrganizedCourses();
 
   return (
     <div style={{ maxWidth: '1100px', margin: '40px auto', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', border: `1px solid ${colors.borderLight}`, borderRadius: '16px', padding: '40px', backgroundColor: colors.white, boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)' }}>
@@ -158,7 +199,7 @@ const ScheduleBuilder = () => {
                 const isSelected = currentDays.includes(day);
                 return (
                   <option key={day} value={day}>
-                    {isSelected ? `✓ ${day}` : `   ${day}`}
+                    {isSelected ? `[Selected] ${day}` : `   ${day}`}
                   </option>
                 );
               })}
@@ -200,26 +241,35 @@ const ScheduleBuilder = () => {
         </div>
       </form>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '600', color: colors.textMain, margin: 0 }}>Your Courses ({semester})</h2>
-        <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '8px', overflow: 'hidden', display: 'flex' }}>
-          <button type="button" onClick={() => setViewMode('list')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'list' ? colors.primaryBlue : colors.white, color: viewMode === 'list' ? colors.white : colors.textMain, cursor: 'pointer' }}>List</button>
-          <button type="button" onClick={() => setViewMode('calendar')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'calendar' ? colors.primaryBlue : colors.white, color: viewMode === 'calendar' ? colors.white : colors.textMain, cursor: 'pointer' }}>Calendar</button>
+        
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '8px', overflow: 'hidden', display: 'flex' }}>
+            <button type="button" onClick={() => setViewMode('list')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'list' ? colors.primaryBlue : colors.white, color: viewMode === 'list' ? colors.white : colors.textMain, cursor: 'pointer' }}>List</button>
+            <button type="button" onClick={() => setViewMode('calendar')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'calendar' ? colors.primaryBlue : colors.white, color: viewMode === 'calendar' ? colors.white : colors.textMain, cursor: 'pointer' }}>Calendar</button>
+          </div>
         </div>
       </div>
 
       {viewMode === 'list' ? (
-        courses.length === 0 ? (
+        organizedCourses.length === 0 ? (
           <EmptyCoursesPlaceholder />
         ) : (
           <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
-            {courses.map(course => {
+            {organizedCourses.map(course => {
               const displayDaysList = course.days ? course.days.join(', ') : course.day;
+              const isPinned = pinnedCourseIds.includes(course.id);
               return (
-                <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
-                  <div>
-                    <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
-                    <div style={{ fontSize: '14px', color: colors.textMuted }}>{displayDaysList} | {course.start} - {course.end}</div>
+                <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: isPinned ? '#f8fafd' : colors.white }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                    <div>
+                      <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {course.name}
+                        {isPinned && <span style={{ fontSize: '11px', backgroundColor: '#e8f0fe', color: colors.primaryBlue, padding: '2px 6px', borderRadius: '4px', fontWeight: '500' }}>Pinned</span>}
+                      </div>
+                      <div style={{ fontSize: '14px', color: colors.textMuted }}>{displayDaysList} | {course.start} - {course.end}</div>
+                    </div>
                   </div>
                   <div>
                     <select 
@@ -228,8 +278,15 @@ const ScheduleBuilder = () => {
                       style={{ ...inputStyle, width: 'auto', display: 'inline-block', padding: '6px 12px', cursor: 'pointer' }}
                     >
                       <option value="" disabled>Actions</option>
-                      <option value="edit">Edit</option>
-                      <option value="remove">Remove</option>
+                      <option value="edit">Edit Details</option>
+                      <option value="toggle-pin">{isPinned ? 'Unpin Course' : 'Pin on Calendar'}</option>
+                      <option value="" disabled>──────────</option>
+                      <option value="" disabled>Organize List By:</option>
+                      <option value="sort-default">  Added Order {sortMethod === 'default' ? '(Selected)' : ''}</option>
+                      <option value="sort-alpha">  Alphabetical (A-Z) {sortMethod === 'alpha' ? '(Selected)' : ''}</option>
+                      <option value="sort-time">  Start Time {sortMethod === 'time' ? '(Selected)' : ''}</option>
+                      <option value="" disabled>──────────</option>
+                      <option value="remove">Remove Course</option>
                     </select>
                   </div>
                 </div>
@@ -271,9 +328,10 @@ const ScheduleBuilder = () => {
 
             {daysOfWeek.map((day) => (
               <div key={day} style={{ position: 'relative', height: '100%' }}>
-                {courses.filter(c => c.days ? c.days.includes(day) : c.day === day).map(course => {
+                {organizedCourses.filter(c => c.days ? c.days.includes(day) : c.day === day).map(course => {
                   const { top, height } = calculatePosition(course.start, course.end);
                   const styleTheme = getCourseStyle(course.name);
+                  const isPinned = pinnedCourseIds.includes(course.id);
 
                   return (
                     <div 
@@ -285,7 +343,7 @@ const ScheduleBuilder = () => {
                         top: top,
                         height: height,
                         backgroundColor: styleTheme.bg,
-                        border: `1px solid ${styleTheme.border}`,
+                        border: isPinned ? `2px dashed ${colors.primaryBlue}` : `1px solid ${styleTheme.border}`,
                         borderRadius: '10px',
                         padding: '10px',
                         boxSizing: 'border-box',
@@ -293,7 +351,8 @@ const ScheduleBuilder = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        boxShadow: isPinned ? '0 2px 6px rgba(26,115,232,0.15)' : 'none'
                       }}
                       title="Click to edit or remove course"
                       onClick={() => {
@@ -307,8 +366,9 @@ const ScheduleBuilder = () => {
                         }
                       }}
                     >
-                      <div style={{ fontWeight: '700', fontSize: '13px', color: styleTheme.text, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {course.name}
+                      <div style={{ fontWeight: '700', fontSize: '13px', color: styleTheme.text, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{course.name}</span>
+                        {isPinned && <span style={{ fontSize: '11px', fontWeight: 'normal' }}>(Pinned)</span>}
                       </div>
                       <div style={{ fontSize: '11px', color: styleTheme.text, opacity: 0.9 }}>
                         {course.start.replace(':00', '')}–{course.end.replace(':00', '')}
