@@ -65,6 +65,34 @@ const ScheduleBuilder = () => {
     calculatePosition
   } = useScheduleBuilder();
 
+  const handleActionChange = (e, course) => {
+    const action = e.target.value;
+    if (action === 'edit') {
+      startEditCourse(course);
+    } else if (action === 'remove') {
+      handleRemoveCourse(course.id);
+    }
+    e.target.value = '';
+  };
+
+  // Helper to toggle selected days in formData
+  const handleDayToggle = (day) => {
+    // Fallback to empty array if useScheduleBuilder leaves formData.days undefined initially
+    const currentDays = formData.days || (formData.day ? [formData.day] : []);
+    
+    if (currentDays.includes(day)) {
+      setFormData({
+        ...formData,
+        days: currentDays.filter(d => d !== day)
+      });
+    } else {
+      setFormData({
+        ...formData,
+        days: [...currentDays, day]
+      });
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1100px', margin: '40px auto', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', border: `1px solid ${colors.borderLight}`, borderRadius: '16px', padding: '40px', backgroundColor: colors.white, boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)' }}>
       
@@ -90,7 +118,7 @@ const ScheduleBuilder = () => {
           {editingId ? 'Edit course details' : 'Add your courses'}
         </h2>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Course name</label>
             <input 
@@ -103,14 +131,35 @@ const ScheduleBuilder = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Day</label>
-            <select 
-              value={formData.day}
-              onChange={(e) => setFormData({...formData, day: e.target.value})}
-              style={inputStyle}
-            >
-              {daysOfWeek.map(day => <option key={day} value={day}>{day}</option>)}
-            </select>
+            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Days</label>
+            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', backgroundColor: colors.white, border: `1px solid ${colors.borderLight}`, borderRadius: '8px', padding: '6px' }}>
+              {daysOfWeek.map((day, idx) => {
+                const currentDays = formData.days || (formData.day ? [formData.day] : []);
+                const isSelected = currentDays.includes(day);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleDayToggle(day)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 0',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      borderRadius: '4px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      backgroundColor: isSelected ? colors.primaryBlue : 'transparent',
+                      color: isSelected ? colors.white : colors.textMain,
+                      transition: 'background-color 0.2s'
+                    }}
+                    title={day}
+                  >
+                    {displayDays[idx]}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div>
@@ -138,7 +187,7 @@ const ScheduleBuilder = () => {
 
         <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
           <button type="submit" style={{ backgroundColor: colors.primaryBlue, color: colors.white, border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
-            {editingId ? '💾 Save Changes' : '+ Add'}
+            {editingId ? 'Save Changes' : '+ Add'}
           </button>
           {editingId && (
             <button type="button" onClick={cancelEdit} style={{ backgroundColor: 'transparent', color: colors.textMuted, border: `1px solid ${colors.borderLight}`, borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
@@ -161,18 +210,28 @@ const ScheduleBuilder = () => {
           <EmptyCoursesPlaceholder />
         ) : (
           <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
-            {courses.map(course => (
-              <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
-                <div>
-                  <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
-                  <div style={{ fontSize: '14px', color: colors.textMuted }}>{course.day} | {course.start} - {course.end}</div>
+            {courses.map(course => {
+              const displayDaysList = course.days ? course.days.join(', ') : course.day;
+              return (
+                <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: colors.white }}>
+                  <div>
+                    <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px' }}>{course.name}</div>
+                    <div style={{ fontSize: '14px', color: colors.textMuted }}>{displayDaysList} | {course.start} - {course.end}</div>
+                  </div>
+                  <div>
+                    <select 
+                      defaultValue=""
+                      onChange={(e) => handleActionChange(e, course)}
+                      style={{ ...inputStyle, width: 'auto', display: 'inline-block', padding: '6px 12px', cursor: 'pointer' }}
+                    >
+                      <option value="" disabled>Actions</option>
+                      <option value="edit">Edit</option>
+                      <option value="remove">Remove</option>
+                    </select>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <button type="button" onClick={() => startEditCourse(course)} style={{ backgroundColor: 'transparent', color: colors.primaryBlue, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
-                  <button type="button" onClick={() => handleRemoveCourse(course.id)} style={{ backgroundColor: 'transparent', color: colors.dangerRed, border: 'none', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Remove</button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )
       ) : (
@@ -209,7 +268,7 @@ const ScheduleBuilder = () => {
 
             {daysOfWeek.map((day) => (
               <div key={day} style={{ position: 'relative', height: '100%' }}>
-                {courses.filter(c => c.day === day).map(course => {
+                {courses.filter(c => c.days ? c.days.includes(day) : c.day === day).map(course => {
                   const { top, height } = calculatePosition(course.start, course.end);
                   const styleTheme = getCourseStyle(course.name);
 
