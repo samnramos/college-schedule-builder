@@ -75,22 +75,37 @@ const ScheduleBuilder = () => {
     e.target.value = '';
   };
 
-  // Helper to toggle selected days in formData
-  const handleDayToggle = (day) => {
-    // Fallback to empty array if useScheduleBuilder leaves formData.days undefined initially
+  const handleDropdownDayToggle = (e) => {
+    const chosenDay = e.target.value;
+    if (!chosenDay) return;
+
     const currentDays = formData.days || (formData.day ? [formData.day] : []);
-    
-    if (currentDays.includes(day)) {
-      setFormData({
-        ...formData,
-        days: currentDays.filter(d => d !== day)
-      });
+    let updatedDays;
+
+    if (currentDays.includes(chosenDay)) {
+      updatedDays = currentDays.filter(d => d !== chosenDay);
     } else {
-      setFormData({
-        ...formData,
-        days: [...currentDays, day]
-      });
+      updatedDays = [...currentDays, chosenDay].sort(
+        (a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b)
+      );
     }
+
+    setFormData({
+      ...formData,
+      days: updatedDays,
+      day: updatedDays[0] || '' 
+    });
+
+    e.target.value = '';
+  };
+
+  const getSelectedDaysLabel = () => {
+    const currentDays = formData.days || (formData.day ? [formData.day] : []);
+    if (currentDays.length === 0) return 'Select Days';
+    
+    return currentDays
+      .map(day => displayDays[daysOfWeek.indexOf(day)])
+      .join(', ');
   };
 
   return (
@@ -118,7 +133,7 @@ const ScheduleBuilder = () => {
           {editingId ? 'Edit course details' : 'Add your courses'}
         </h2>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Course name</label>
             <input 
@@ -132,34 +147,22 @@ const ScheduleBuilder = () => {
 
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Days</label>
-            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', backgroundColor: colors.white, border: `1px solid ${colors.borderLight}`, borderRadius: '8px', padding: '6px' }}>
-              {daysOfWeek.map((day, idx) => {
+            <select 
+              value="" 
+              onChange={handleDropdownDayToggle}
+              style={inputStyle}
+            >
+              <option value="" disabled>{getSelectedDaysLabel()}</option>
+              {daysOfWeek.map(day => {
                 const currentDays = formData.days || (formData.day ? [formData.day] : []);
                 const isSelected = currentDays.includes(day);
                 return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => handleDayToggle(day)}
-                    style={{
-                      flex: 1,
-                      padding: '6px 0',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      borderRadius: '4px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: isSelected ? colors.primaryBlue : 'transparent',
-                      color: isSelected ? colors.white : colors.textMain,
-                      transition: 'background-color 0.2s'
-                    }}
-                    title={day}
-                  >
-                    {displayDays[idx]}
-                  </button>
+                  <option key={day} value={day}>
+                    {isSelected ? `✓ ${day}` : `   ${day}`}
+                  </option>
                 );
               })}
-            </div>
+            </select>
           </div>
 
           <div>
