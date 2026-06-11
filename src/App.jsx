@@ -4,7 +4,7 @@ import './App.css';
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const displayDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const timeSlots = ['8a', '10a', '12p', '2p', '4p'];
+const timeSlots = ['8a', '10a', '12p', '2p', '4p', '6p', '8p'];
 
 const EmptyCoursesPlaceholder = () => (
   <div className="sb-empty-placeholder">
