@@ -1,48 +1,13 @@
 import React, { useState } from 'react';
 import { useScheduleBuilder } from './useScheduleBuilder';
-
-const colors = {
-  primaryBlue: '#1a73e8',
-  buttonHover: '#155cb4',
-  bgContainer: '#f1f3f4',
-  borderLight: '#e0e0e0', 
-  textMain: '#202124',
-  textMuted: '#70757a',
-  textPlaceholder: '#9aa0a6',
-  white: '#ffffff',
-  dangerRed: '#d93025',
-  dangerHover: '#b31412',
-  calendarHeaderBg: '#f8f9fa'
-};
+import './App.css'; 
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const displayDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const timeSlots = ['8a', '10a', '12p', '2p', '4p'];
 
-const inputStyle = {
-  backgroundColor: colors.white,
-  color: colors.textMain,
-  border: `1px solid ${colors.borderLight}`,
-  borderRadius: '8px',
-  padding: '10px 14px',
-  fontSize: '14px',
-  width: '100%',
-  boxSizing: 'border-box'
-};
-
 const EmptyCoursesPlaceholder = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    padding: '24px 32px',
-    border: `2px dashed ${colors.borderLight}`,
-    borderRadius: '16px',
-    backgroundColor: colors.white,
-    color: colors.textPlaceholder,
-    fontSize: '16px',
-    fontStyle: 'normal'
-  }}>
+  <div className="sb-empty-placeholder">
     Add your courses and they will appear here! 
   </div>
 );
@@ -150,16 +115,16 @@ const ScheduleBuilder = () => {
   const organizedCourses = getOrganizedCourses();
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '40px auto', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', border: `1px solid ${colors.borderLight}`, borderRadius: '16px', padding: '40px', backgroundColor: colors.white, boxShadow: '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)' }}>
+    <div className="sb-wrapper">
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.textMain, margin: 0 }}>College Schedule Builder</h1>
+      <div className="sb-header">
+        <h1 className="sb-title">College Schedule Builder</h1>
         <div>
-          <span style={{ fontSize: '14px', color: colors.textMuted, marginRight: '8px' }}>Semester:</span>
+          <span className="sb-semester-label">Semester:</span>
           <select 
             value={semester} 
             onChange={(e) => setSemester(e.target.value)}
-            style={{ ...inputStyle, width: 'auto', display: 'inline-block' }}
+            className="sb-input sb-select-inline"
           >
             <option value="Fall 2026">Fall 2026</option>
             <option value="Winter 2026">Winter 2026</option>
@@ -169,29 +134,29 @@ const ScheduleBuilder = () => {
         </div>
       </div>
 
-      <form onSubmit={handleAddCourse} style={{ backgroundColor: colors.bgContainer, padding: '24px', borderRadius: '12px', marginBottom: '32px' }}>
-        <h2 style={{ textAlign: 'center', color: colors.primaryBlue, fontSize: '18px', marginTop: 0, marginBottom: '20px', fontWeight: '600' }}>
+      <form onSubmit={handleAddCourse} className="sb-form">
+        <h2 className="sb-form-title">
           {editingId ? 'Edit course details' : 'Add your courses'}
         </h2>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'end' }}>
+        <div className="sb-form-grid">
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Course name</label>
+            <label className="sb-field-label">Course name</label>
             <input 
               type="text" 
               placeholder="e.g. CST 2309 or Intro to CS"
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
-              style={inputStyle}
+              className="sb-input"
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Days</label>
+            <label className="sb-field-label">Days</label>
             <select 
               value="" 
               onChange={handleDropdownDayToggle}
-              style={inputStyle}
+              className="sb-input"
             >
               <option value="" disabled>{getSelectedDaysLabel()}</option>
               {daysOfWeek.map(day => {
@@ -207,47 +172,59 @@ const ScheduleBuilder = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>Start</label>
+            <label className="sb-field-label">Start</label>
             <input 
               type="text" 
               placeholder="10:00am"
               value={formData.start}
               onChange={(e) => setFormData({...formData, start: e.target.value})}
-              style={inputStyle}
+              className="sb-input"
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px', textAlign: 'center' }}>End</label>
+            <label className="sb-field-label">End</label>
             <input 
               type="text" 
               placeholder="11:30am"
               value={formData.end}
               onChange={(e) => setFormData({...formData, end: e.target.value})}
-              style={inputStyle}
+              className="sb-input"
             />
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-          <button type="submit" style={{ backgroundColor: colors.primaryBlue, color: colors.white, border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+        <div className="sb-form-actions">
+          <button type="submit" className="sb-btn-primary">
             {editingId ? 'Save Changes' : '+ Add'}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ backgroundColor: 'transparent', color: colors.textMuted, border: `1px solid ${colors.borderLight}`, borderRadius: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+            <button type="button" onClick={cancelEdit} className="sb-btn-secondary">
               Cancel
             </button>
           )}
         </div>
       </form>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', color: colors.textMain, margin: 0 }}>Your Courses ({semester})</h2>
+      <div className="sb-toolbar">
+        <h2 className="sb-section-title">Your Courses ({semester})</h2>
         
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '8px', overflow: 'hidden', display: 'flex' }}>
-            <button type="button" onClick={() => setViewMode('list')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'list' ? colors.primaryBlue : colors.white, color: viewMode === 'list' ? colors.white : colors.textMain, cursor: 'pointer' }}>List</button>
-            <button type="button" onClick={() => setViewMode('calendar')} style={{ border: 'none', padding: '8px 16px', fontSize: '14px', backgroundColor: viewMode === 'calendar' ? colors.primaryBlue : colors.white, color: viewMode === 'calendar' ? colors.white : colors.textMain, cursor: 'pointer' }}>Calendar</button>
+          <div className="sb-toggle-group">
+            <button 
+              type="button" 
+              onClick={() => setViewMode('list')} 
+              className={`sb-toggle-btn ${viewMode === 'list' ? 'active' : 'inactive'}`}
+            >
+              List
+            </button>
+            <button 
+              type="button" 
+              onClick={() => setViewMode('calendar')} 
+              className={`sb-toggle-btn ${viewMode === 'calendar' ? 'active' : 'inactive'}`}
+            >
+              Calendar
+            </button>
           </div>
         </div>
       </div>
@@ -256,26 +233,26 @@ const ScheduleBuilder = () => {
         organizedCourses.length === 0 ? (
           <EmptyCoursesPlaceholder />
         ) : (
-          <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '12px', overflow: 'hidden' }}>
+          <div className="sb-list-container">
             {organizedCourses.map(course => {
               const displayDaysList = course.days ? course.days.join(', ') : course.day;
               const isPinned = pinnedCourseIds.includes(course.id);
               return (
-                <div key={course.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${colors.borderLight}`, backgroundColor: isPinned ? '#f8fafd' : colors.white }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                <div key={course.id} className={`sb-list-item ${isPinned ? 'pinned' : ''}`}>
+                  <div className="sb-item-left">
                     <div>
-                      <div style={{ fontWeight: '600', color: colors.textMain, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div className="sb-item-name-row">
                         {course.name}
-                        {isPinned && <span style={{ fontSize: '11px', backgroundColor: '#e8f0fe', color: colors.primaryBlue, padding: '2px 6px', borderRadius: '4px', fontWeight: '500' }}>Pinned</span>}
+                        {isPinned && <span className="sb-badge-pinned">Pinned</span>}
                       </div>
-                      <div style={{ fontSize: '14px', color: colors.textMuted }}>{displayDaysList} | {course.start} - {course.end}</div>
+                      <div className="sb-item-details">{displayDaysList} | {course.start} - {course.end}</div>
                     </div>
                   </div>
                   <div>
                     <select 
                       defaultValue=""
                       onChange={(e) => handleActionChange(e, course)}
-                      style={{ ...inputStyle, width: 'auto', display: 'inline-block', padding: '6px 12px', cursor: 'pointer' }}
+                      className="sb-input sb-select-action"
                     >
                       <option value="" disabled>Actions</option>
                       <option value="edit">Edit Details</option>
@@ -295,39 +272,39 @@ const ScheduleBuilder = () => {
           </div>
         )
       ) : (
-        <div style={{ border: `1px solid ${colors.borderLight}`, borderRadius: '16px', backgroundColor: colors.white, padding: '24px 16px 16px 16px', position: 'relative' }}>
+        <div className="sb-calendar-card">
           
-          <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(7, 1fr)', textAlign: 'center', marginBottom: '10px' }}>
+          <div className="sb-calendar-days-header">
             <div></div> 
             {displayDays.map((day) => (
-              <div key={day} style={{ fontWeight: '400', fontSize: '15px', color: '#5f6368' }}>{day}</div>
+              <div key={day} className="sb-day-header-cell">{day}</div>
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(7, 1fr)', position: 'relative', height: '540px' }}>
+          <div className="sb-calendar-grid-body">
             
-            <div style={{ position: 'absolute', top: 0, left: '50px', right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
+            <div className="sb-grid-horizontal-lines">
               {[...Array(6)].map((_, idx) => (
-                <div key={idx} style={{ borderBottom: `1px solid #f1f3f4`, width: '100%', height: '0px' }} />
+                <div key={idx} className="sb-grid-row-line" />
               ))}
             </div>
 
-            <div style={{ position: 'absolute', top: 0, left: '50px', right: 0, bottom: 0, display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', pointerEvents: 'none' }}>
+            <div className="sb-grid-vertical-lines">
               {daysOfWeek.map((day, idx) => (
-                <div key={day} style={{ borderLeft: `1px solid #e8eaed`, height: '100%', borderRight: idx === 6 ? `1px solid #e8eaed` : 'none' }} />
+                <div key={day} className={`sb-grid-col-line ${idx === 6 ? 'last-day' : ''}`} />
               ))}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transform: 'translateY(-8px)', height: '100%', fontSize: '13px', color: '#70757a', paddingRight: '12px', textAlign: 'right' }}>
+            <div className="sb-timeline-column">
               <div></div> 
               {timeSlots.map(time => (
-                <div key={time} style={{ height: '0px', lineHeight: '0px' }}>{time}</div>
+                <div key={time} className="sb-timeline-label">{time}</div>
               ))}
               <div></div> 
             </div>
 
             {daysOfWeek.map((day) => (
-              <div key={day} style={{ position: 'relative', height: '100%' }}>
+              <div key={day} className="sb-day-column">
                 {organizedCourses.filter(c => c.days ? c.days.includes(day) : c.day === day).map(course => {
                   const { top, height } = calculatePosition(course.start, course.end);
                   const styleTheme = getCourseStyle(course.name);
@@ -336,23 +313,12 @@ const ScheduleBuilder = () => {
                   return (
                     <div 
                       key={course.id} 
+                      className={`sb-course-block ${isPinned ? 'pinned-block' : ''}`}
                       style={{ 
-                        position: 'absolute',
-                        left: '6px',
-                        right: '6px',
                         top: top,
                         height: height,
                         backgroundColor: styleTheme.bg,
-                        border: isPinned ? `2px dashed ${colors.primaryBlue}` : `1px solid ${styleTheme.border}`,
-                        borderRadius: '10px',
-                        padding: '10px',
-                        boxSizing: 'border-box',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        cursor: 'pointer',
-                        boxShadow: isPinned ? '0 2px 6px rgba(26,115,232,0.15)' : 'none'
+                        border: `1px solid ${styleTheme.border}`
                       }}
                       title="Click to edit or remove course"
                       onClick={() => {
@@ -366,11 +332,11 @@ const ScheduleBuilder = () => {
                         }
                       }}
                     >
-                      <div style={{ fontWeight: '700', fontSize: '13px', color: styleTheme.text, marginBottom: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{course.name}</span>
-                        {isPinned && <span style={{ fontSize: '11px', fontWeight: 'normal' }}>(Pinned)</span>}
+                      <div style={{ color: styleTheme.text }} className="sb-course-block-title-row">
+                        <span className="sb-course-block-title-text">{course.name}</span>
+                        {isPinned && <span className="sb-course-block-pinned-label">(Pinned)</span>}
                       </div>
-                      <div style={{ fontSize: '11px', color: styleTheme.text, opacity: 0.9 }}>
+                      <div style={{ color: styleTheme.text }} className="sb-course-block-time">
                         {course.start.replace(':00', '')}–{course.end.replace(':00', '')}
                       </div>
                     </div>
