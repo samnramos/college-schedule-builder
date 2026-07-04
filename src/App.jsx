@@ -1,16 +1,24 @@
+//use of AI generated code
+
 import React, { useState } from 'react';
 import { useScheduleBuilder } from './useScheduleBuilder';
 import './App.css'; 
 
+// Constants for days of the week and time slots
+
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const displayDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const timeSlots = ['8a', '10a', '12p', '2p', '4p', '6p', '8p'];
+
+// Placeholder component for when there are no courses
 
 const EmptyCoursesPlaceholder = () => (
   <div className="sb-empty-placeholder">
     Add your courses and they will appear here! 
   </div>
 );
+
+// Main ScheduleBuilder component
 
 const ScheduleBuilder = () => {
   const {
@@ -73,6 +81,8 @@ const ScheduleBuilder = () => {
     e.target.value = '';
   };
 
+  // Function to get the label for the selected days in the dropdown
+
   const getSelectedDaysLabel = () => {
     const currentDays = formData.days || (formData.day ? [formData.day] : []);
     if (currentDays.length === 0) return 'Select Days';
@@ -82,6 +92,8 @@ const ScheduleBuilder = () => {
       .join(', ');
   };
 
+// Function to toggle pinning a course
+
   const togglePinCourse = (id) => {
     if (pinnedCourseIds.includes(id)) {
       setPinnedCourseIds(pinnedCourseIds.filter(courseId => courseId !== id));
@@ -89,6 +101,8 @@ const ScheduleBuilder = () => {
       setPinnedCourseIds([...pinnedCourseIds, id]);
     }
   };
+
+  // Function to get organized courses based on pinning and sorting
 
   const getOrganizedCourses = () => {
     const coursesCopy = [...courses];
@@ -111,6 +125,8 @@ const ScheduleBuilder = () => {
     
     return coursesCopy;
   };
+
+  // Get the organized courses for rendering
 
   const organizedCourses = getOrganizedCourses();
 
