@@ -2,7 +2,7 @@ A college schedule builder
 
 Introduction 
 
-A college schedule builder similar to cuny schedule builder where you can manage and organzie your courses and it saves!
+A college schedule builder similar to cuny schedule builder where you can manage and organzie your courses!
 
 Instructions
 
