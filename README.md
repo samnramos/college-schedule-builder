@@ -6,9 +6,9 @@ Stack: React + Vite, with @faker-js/faker for fake usernames
 
 ## Run
 
-yarn install
+`yarn install`
 
-yarn dev
+`yarn dev`
 
 ## Instructions
 
